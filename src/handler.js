@@ -1,5 +1,5 @@
 const { nanoid } = require('nanoid')
-const notes = require('./notes')
+const books = require('./books')
 
 const addNoteHandler = (request, h) => {
   const { title, tags, body } = request.payload
@@ -12,9 +12,9 @@ const addNoteHandler = (request, h) => {
     title, tags, body, id, createdAt, updatedAt
   }
 
-  notes.push(newNote)
+  books.push(newNote)
 
-  const isSuccess = notes.filter((note) => note.id === id).length > 0
+  const isSuccess = books.filter((note) => note.id === id).length > 0
 
   if (isSuccess) {
     const response = h.response({
@@ -35,17 +35,17 @@ const addNoteHandler = (request, h) => {
   return response
 }
 
-const getAllNotesHandler = () => ({
+const getAllBooksHandler = () => ({
   status: 'success',
   data: {
-    notes
+    books
   }
 })
 
 const getNoteByIdHandler = (request, h) => {
   const { id } = request.params
 
-  const note = notes.filter((n) => n.id === id)[0]
+  const note = books.filter((n) => n.id === id)[0]
 
   if (note !== undefined) {
     return {
@@ -69,11 +69,11 @@ const editNoteByIdHandler = (request, h) => {
   const { title, tags, body } = request.payload
   const updatedAt = new Date().toISOString()
 
-  const index = notes.findIndex((note) => note.id === id)
+  const index = books.findIndex((note) => note.id === id)
 
   if (index !== -1) {
-    notes[index] = {
-      ...notes[index],
+    books[index] = {
+      ...books[index],
       title,
       tags,
       body,
@@ -98,10 +98,10 @@ const editNoteByIdHandler = (request, h) => {
 const deleteNoteByIdHandler = (request, h) => {
   const { id } = request.params
 
-  const index = notes.findIndex((note) => note.id === id)
+  const index = books.findIndex((note) => note.id === id)
 
   if (index !== -1) {
-    notes.splice(index, 1)
+    books.splice(index, 1)
     const response = h.response({
       status: 'success',
       message: 'Catatan berhasil dihapus'
@@ -118,4 +118,4 @@ const deleteNoteByIdHandler = (request, h) => {
   return response
 }
 
-module.exports = { addNoteHandler, getAllNotesHandler, getNoteByIdHandler, editNoteByIdHandler, deleteNoteByIdHandler }
+module.exports = { addNoteHandler, getAllBooksHandler, getNoteByIdHandler, editNoteByIdHandler, deleteNoteByIdHandler }
