@@ -10,7 +10,7 @@ const addBookHandler = (request, h) => {
     publisher,
     pageCount,
     readPage,
-    reading
+    reading,
   } = request.payload
 
   const id = nanoid(16)
@@ -30,8 +30,8 @@ const addBookHandler = (request, h) => {
     finished,
     reading,
     insertedAt,
-    updatedAt
-  }
+    updatedAt,
+  };
 
   books.push(newBook)
 
@@ -78,12 +78,41 @@ const addBookHandler = (request, h) => {
   return response
 }
 
-const getAllBooksHandler = () => ({
-  status: 'success',
-  data: {
-    books
+const getBooksByNameHandler = (request, h) => {
+  let searchBook = books;
+  let {name,reading,finished} = request.query;
+
+  if (name !== undefined) {
+    name = name.toLowerCase();
+    searchBook = searchBook.filter((n) => 
+      n.name.toLowerCase() = name
+      );
   }
-});
+
+  if (reading !== undefined) {
+    reading = reading !== '0';
+    searchBook = searchBook.filter((n) => n.reading === reading);
+  }
+
+  if (finished !== undefined) {
+    finished = finished !== '0';
+    searchBook = searchBook.filter((n) => n.finished === finished);
+  }
+
+  searchBook = searchBook.map((n) => ({
+    id: n.id,
+    name: n.name,
+    publisher: n.publisher,
+  }));
+
+  const response = h.response({
+    status: 'success',
+    data:{
+      books: searchBook
+    }
+  }).cod(200)
+  return response
+}
 
 
 const getBookByIdHandler = (request, h) => {
@@ -201,42 +230,5 @@ const deleteBookByIdHandler = (request, h) => {
   response.code(404)
   return response
 }
-
-const getBooksByNameHandler = (request, h) => {
-  let searchBook = books;
-  let {name,reading,finished} = request.query;
-
-  if (name !== undefined) {
-    name = name.toLowerCase();
-    searchBook = searchBook.filter((n) => 
-      n.name.toLowerCase() = name
-      );
-  }
-
-  if (reading !== undefined) {
-    reading = reading !== '0';
-    searchBook = searchBook.filter((n) => n.reading === reading);
-  }
-
-  if (finished !== undefined) {
-    finished = finished !== '0';
-    searchBook = searchBook.filter((n) => n.finished === finished);
-  }
-
-  searchBook = searchBook.map((n) => ({
-    id: n.id,
-    name: n.name,
-    publisher: n.publisher,
-  }));
-
-  const response = h.response({
-    status: 'success',
-    data:{
-      books: searchBook
-    }
-  }).cod(200)
-  return response
-}
-
 
 module.exports = { addBookHandler, getAllBooksHandler, getBookByIdHandler, editBookByIdHandler, deleteBookByIdHandler,getBooksByNameHandler }
