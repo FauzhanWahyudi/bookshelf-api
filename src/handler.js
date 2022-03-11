@@ -10,7 +10,7 @@ const addBookHandler = (request, h) => {
     publisher,
     pageCount,
     readPage,
-    reading,
+    reading
   } = request.payload
 
   const id = nanoid(16)
@@ -30,20 +30,17 @@ const addBookHandler = (request, h) => {
     finished,
     reading,
     insertedAt,
-    updatedAt,
-  };
-
-  books.push(newBook)
+    updatedAt
+  }
 
   const isErrorName = newBook.name === undefined
   const isErrorReadPage = newBook.readPage > newBook.pageCount
-  const isSuccess = books.filter((book) => book.id === id).length > 0
 
   if (isErrorName) {
     const response = h.response({
       status: 'fail',
-      message: 'Gagal menambahkan buku. Mohon isi nama buku'   
-      })
+      message: 'Gagal menambahkan buku. Mohon isi nama buku'
+    })
     response.code(400)
     return response
   }
@@ -51,18 +48,20 @@ const addBookHandler = (request, h) => {
   if (isErrorReadPage) {
     const response = h.response({
       status: 'fail',
-      message: "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount"
+      message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount'
     })
     response.code(400)
     return response
   }
+  books.push(newBook)
+  const isSuccess = books.filter((book) => book.id === id).length > 0
 
   if (isSuccess) {
     const response = h.response({
       status: 'success',
       message: 'Buku berhasil ditambahkan',
       data: {
-        bookId: id
+        bookId: newBook.id
       }
     })
     response.code(201)
@@ -78,45 +77,40 @@ const addBookHandler = (request, h) => {
   return response
 }
 
-const getBooksByNameHandler = (request, h) => {
-  let searchBook = books;
-  let {name,reading,finished} = request.query;
+const getAllBooksHandler = (request, h) => {
+  let searchBook = books
+  let {name, reading, finished} = request.query
 
   if (name !== undefined) {
-    name = name.toLowerCase();
-    searchBook = searchBook.filter((n) => 
-      n.name.toLowerCase() = name
-      );
+    name = name.toLowerCase()
+    searchBook = searchBook.filter((n) => n.name.toLowerCase().includes(name))
   }
 
   if (reading !== undefined) {
-    reading = reading !== '0';
-    searchBook = searchBook.filter((n) => n.reading === reading);
+    reading = reading !== '0'
+    searchBook = searchBook.filter((n) => n.reading === reading)
   }
 
   if (finished !== undefined) {
-    finished = finished !== '0';
-    searchBook = searchBook.filter((n) => n.finished === finished);
+    finished = finished !== '0'
+    searchBook = searchBook.filter((n) => n.finished === finished)
   }
-
-  searchBook = searchBook.map((n) => ({
-    id: n.id,
-    name: n.name,
-    publisher: n.publisher,
-  }));
 
   const response = h.response({
     status: 'success',
-    data:{
-      books: searchBook
+    data: {
+      books: searchBook.map((book) => ({
+        id: book.id,
+        name: book.name,
+        publisher: book.publisher
+      }))
     }
-  }).cod(200)
+  }).code(200)
   return response
 }
 
-
 const getBookByIdHandler = (request, h) => {
-  const {bookId} = request.params
+  const { bookId } = request.params
 
   const book = books.filter((n) => n.id === bookId)[0]
 
@@ -140,7 +134,7 @@ const getBookByIdHandler = (request, h) => {
 }
 
 const editBookByIdHandler = (request, h) => {
-  const {bookId}  = request.params
+  const { bookId } = request.params
 
   const {
     name,
@@ -231,4 +225,4 @@ const deleteBookByIdHandler = (request, h) => {
   return response
 }
 
-module.exports = { addBookHandler, getAllBooksHandler, getBookByIdHandler, editBookByIdHandler, deleteBookByIdHandler,getBooksByNameHandler }
+module.exports = { addBookHandler, getAllBooksHandler, getBookByIdHandler, editBookByIdHandler, deleteBookByIdHandler }
