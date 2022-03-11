@@ -42,8 +42,8 @@ const addBookHandler = (request, h) => {
   if (isErrorName) {
     const response = h.response({
       status: 'fail',
-      message: 'Gagal menambahkan buku. Mohon isi nama buku'
-    })
+      message: 'Gagal menambahkan buku. Mohon isi nama buku'   
+      })
     response.code(400)
     return response
   }
@@ -51,7 +51,7 @@ const addBookHandler = (request, h) => {
   if (isErrorReadPage) {
     const response = h.response({
       status: 'fail',
-      message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount'
+      message: "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount"
     })
     response.code(400)
     return response
@@ -72,7 +72,7 @@ const addBookHandler = (request, h) => {
   // generic Error
   const response = h.response({
     status: 'fail',
-    message: 'Catatan gagal ditambahkan'
+    message: 'Buku gagal ditambahkan'
   })
   response.code(500)
   return response
@@ -83,12 +83,13 @@ const getAllBooksHandler = () => ({
   data: {
     books
   }
-})
+});
+
 
 const getBookByIdHandler = (request, h) => {
-  const { id } = request.params
+  const {bookId} = request.params
 
-  const book = books.filter((n) => n.id === id)[0]
+  const book = books.filter((n) => n.id === bookId)[0]
 
   if (book === undefined) {
     const response = h.response({
@@ -110,7 +111,7 @@ const getBookByIdHandler = (request, h) => {
 }
 
 const editBookByIdHandler = (request, h) => {
-  const { id } = request.params
+  const {bookId}  = request.params
 
   const {
     name,
@@ -124,14 +125,15 @@ const editBookByIdHandler = (request, h) => {
   } = request.payload
 
   const updatedAt = new Date().toISOString()
-  const index = books.findIndex((n) => n.id === id)
+  const index = books.findIndex((n) => n.id === bookId)
   const isErrorNameEdit = name === undefined
   const isErrorReadPageEdit = readPage > pageCount
+  const finished = pageCount === readPage
 
   if (isErrorNameEdit) {
     const response = h.response({
       status: 'fail',
-      message: 'Gagal menambahkan buku. Mohon isi nama buku'
+      message: 'Gagal memperbarui buku. Mohon isi nama buku'
     })
     response.code(400)
     return response
@@ -140,7 +142,7 @@ const editBookByIdHandler = (request, h) => {
   if (isErrorReadPageEdit) {
     const response = h.response({
       status: 'fail',
-      message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount'
+      message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount'
     })
     response.code(400)
     return response
@@ -156,12 +158,13 @@ const editBookByIdHandler = (request, h) => {
       publisher,
       pageCount,
       readPage,
+      finished,
       reading,
       updatedAt
     }
     const response = h.response({
       status: 'success',
-      message: 'Catatan berhasil diperbarui'
+      message: 'Buku berhasil diperbarui'
     })
     response.code(200)
     return response
@@ -170,16 +173,16 @@ const editBookByIdHandler = (request, h) => {
   // generic error
   const response = h.response({
     status: 'fail',
-    message: 'Gagal memperbarui catatan. Id tidak ditemukan'
+    message: 'Gagal memperbarui buku. Id tidak ditemukan'
   })
   response.code(404)
   return response
 }
 
 const deleteBookByIdHandler = (request, h) => {
-  const { id } = request.params
+  const { bookId } = request.params
 
-  const index = books.findIndex((note) => note.id === id)
+  const index = books.findIndex((n) => n.id === bookId)
 
   if (index !== -1) {
     books.splice(index, 1)
@@ -200,27 +203,40 @@ const deleteBookByIdHandler = (request, h) => {
 }
 
 const getBooksByNameHandler = (request, h) => {
-  const { name } = request.query;
+  let searchBook = books;
+  let {name,reading,finished} = request.query;
 
-  const namaBuku = books.filter((n) => n.name)
-
-  if (namaBuku === undefined) {
-    const response = h.response({
-      status: 'fail',
-      message: 'Buku tidak ditemukan'
-    })
-    response.code(404)
-    return response
+  if (name !== undefined) {
+    name = name.toLowerCase();
+    searchBook = searchBook.filter((n) => 
+      n.name.toLowerCase() = name
+      );
   }
+
+  if (reading !== undefined) {
+    reading = reading !== '0';
+    searchBook = searchBook.filter((n) => n.reading === reading);
+  }
+
+  if (finished !== undefined) {
+    finished = finished !== '0';
+    searchBook = searchBook.filter((n) => n.finished === finished);
+  }
+
+  searchBook = searchBook.map((n) => ({
+    id: n.id,
+    name: n.name,
+    publisher: n.publisher,
+  }));
 
   const response = h.response({
     status: 'success',
-    data: {
-      namaBuku
+    data:{
+      books: searchBook
     }
-  })
-  response.code(200)
+  }).cod(200)
   return response
 }
+
 
 module.exports = { addBookHandler, getAllBooksHandler, getBookByIdHandler, editBookByIdHandler, deleteBookByIdHandler,getBooksByNameHandler }
